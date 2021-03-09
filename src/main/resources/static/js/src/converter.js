@@ -5,13 +5,19 @@ $(document).ready(function(e) {
     $("#convert-mti").click(function() {
         var source = $("#inputMeters").val();
         $.get('/converter/convert', { target: 'in', value: source }, function(data) {
-            $("#inputInches").val(data);
+            if(data.success === "true")
+                $("#inputInches").val(data.result);
+            else
+                $("#inputMeters").addClass("is-invalid");
         });
     });
     $("#convert-itm").click(function() {
         var source = $("#inputInches").val();
         $.get('/converter/convert', { target: 'm', value: source }, function(data) {
-            $("#inputMeters").val(data);
+            if(data.success === "true")
+                $("#inputMeters").val(data.result);
+            else
+                $("#inputInches").addClass("is-invalid");
         });
     });
 });
