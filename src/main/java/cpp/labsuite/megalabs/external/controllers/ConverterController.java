@@ -1,17 +1,19 @@
 package cpp.labsuite.megalabs.external.controllers;
 
-import cpp.labsuite.megalabs.domain.InchToMetersConversionUseCase;
-import cpp.labsuite.megalabs.domain.MetersToInchConversionUseCase;
+import cpp.labsuite.megalabs.domain.MeasurementConversionUseCase;
+import cpp.labsuite.megalabs.external.models.ConvertRequest;
+import cpp.labsuite.megalabs.external.models.ConvertResponse;
+import cpp.labsuite.megalabs.external.models.MeasurementType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,10 +22,7 @@ import java.util.Map;
 public class ConverterController {
 
     @Autowired
-    InchToMetersConversionUseCase inchToMetersConversionUseCase;
-
-    @Autowired
-    MetersToInchConversionUseCase metersToInchConversionUseCase;
+    MeasurementConversionUseCase measurementConversionUseCase;
 
     @RequestMapping(value = "/converter", method = RequestMethod.GET)
     public String index() {
@@ -32,41 +31,20 @@ public class ConverterController {
 
     @RequestMapping(value = "/converter/convert",
             method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public Map<String, String> convert(@RequestParam Map<String, String> params) {
-        if (!(params.containsKey("target") && params.containsKey("value")))
-            throw new RuntimeException("Invalid request");
-        Map<String, String> response = executeConversion(params.get("target"), params.get("value"));
-        return response;
-    }
-
-    private Map<String, String> executeConversion(String target, String value) {
-        Map<String, String> response = new HashMap<>();
-        value = value.replaceAll("[^\\d.]", "");
-        switch (target) {
-            case "in":
-                try {
-                    String convertedValue = metersToInchConversionUseCase.convert(value);
-                    response.put("result", convertedValue);
-                    response.put("success", "true");
-                } catch (NumberFormatException e) {
-                    response.put("success", "false");
-                }
-                break;
-            case "m":
-                try {
-                    String convertedValue = inchToMetersConversionUseCase.convert(value);
-                    response.put("result", convertedValue);
-                    response.put("success", "true");
-                } catch (NumberFormatException e) {
-                    response.put("success", "false");
-                }
-                break;
-            default:
-                throw new RuntimeException("No!");
+            produces = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody ResponseEntity<ConvertResponse> convert(ConvertRequest request) {
+        ConvertResponse response = new ConvertResponse();
+        response.setSuccess(true);
+        String result = "";
+        try {
+             result = request.getTargetSystem() == MeasurementType.METERS ?
+                    measurementConversionUseCase.metersToInches(request.getRequestValue()) :
+                    measurementConversionUseCase.inchesToMeters(request.getRequestValue());
+        } catch (NumberFormatException e) {
+            response.setSuccess(false);
         }
-        return response;
+        response.setResult(result);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
 

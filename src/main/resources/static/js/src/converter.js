@@ -4,8 +4,8 @@ $(document).ready(function(e) {
     });
     $("#convert-mti").click(function() {
         var source = $("#inputMeters").val();
-        $.get('/converter/convert', { target: 'in', value: source }, function(data) {
-            if(data.success === "true")
+        $.get('/converter/convert', { targetSystem: 'in', requestValue: source }, function(data) {
+            if(data.success)
                 $("#inputInches").val(data.result);
             else
                 $("#inputMeters").addClass("is-invalid");
@@ -13,8 +13,8 @@ $(document).ready(function(e) {
     });
     $("#convert-itm").click(function() {
         var source = $("#inputInches").val();
-        $.get('/converter/convert', { target: 'm', value: source }, function(data) {
-            if(data.success === "true")
+        $.get('/converter/convert', { targetSystem: 'm', requestValue: source }, function(data) {
+            if(data.success)
                 $("#inputMeters").val(data.result);
             else
                 $("#inputInches").addClass("is-invalid");
