@@ -1,0 +1,22 @@
+div.tabdiv
+{
+  width: 75%;
+  margin: auto;
+}
+
+#inputs
+{
+  width: 75%;
+  margin: auto;
+}
+
+#add
+{
+  display: block;
+  visibility: visible;
+}
+
+#update
+{
+  display: none;
+}
