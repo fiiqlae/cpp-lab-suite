@@ -1,6 +1,7 @@
 package cpp.labsuite.megalabs.external.controllers;
 
-import cpp.labsuite.megalabs.domain.MeasurementConversionUseCase;
+import cpp.labsuite.megalabs.domain.ConversionService;
+import cpp.labsuite.megalabs.domain.MeasurementConversionServiceFactory;
 import cpp.labsuite.megalabs.external.models.ConvertRequest;
 import cpp.labsuite.megalabs.external.models.ConvertResponse;
 import cpp.labsuite.megalabs.external.models.MeasurementType;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ConverterController {
 
     @Autowired
-    MeasurementConversionUseCase measurementConversionUseCase;
+    MeasurementConversionServiceFactory conversionServiceFactory;
 
     @RequestMapping(value = "/converter", method = RequestMethod.GET)
     public String index() {
@@ -32,11 +33,10 @@ public class ConverterController {
     public @ResponseBody ResponseEntity<ConvertResponse> convert(ConvertRequest request) {
         ConvertResponse response = new ConvertResponse();
         response.setSuccess(true);
-        String result = "";
+        String result = "err";
         try {
-             result = request.getTargetSystem() == MeasurementType.METERS ?
-                    measurementConversionUseCase.metersToInches(request.getRequestValue()) :
-                    measurementConversionUseCase.inchesToMeters(request.getRequestValue());
+            ConversionService service = conversionServiceFactory.getConverter(request.getTargetSystem());
+             result = service.convert(request.getRequestValue());
         } catch (NumberFormatException e) {
             response.setSuccess(false);
         }
